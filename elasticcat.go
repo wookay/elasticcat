@@ -1,0 +1,4 @@
+package elasticcat
+
+func elasticcat() {
+}
