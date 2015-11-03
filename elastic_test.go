@@ -1,32 +1,31 @@
 package elasticcat
 
 import (
-	"fmt"
-	"gopkg.in/olivere/elastic.v3"
+	"encoding/json"
+	"gopkg.in/olivere/elastic.v2"
 	"log"
 	"testing"
 )
 
-func TestElastic(t *testing.T) {
-
-	errorlog := log.New(os.Stdout, "APP ", log.LstdFlags)
-
-	// Obtain a client. You can provide your own HTTP client here.
-	client, err := elastic.NewClient(elastic.SetErrorLog(errorlog))
+func TestElasticV2(t *testing.T) {
+	client, err := elastic.NewClient(elastic.SetURL("http://localhost:9200"))
 	if err != nil {
-		// Handle error
-		panic(err)
+		t.Fatal(err)
+	}
+	res, err := client.PerformRequest("GET", "/", nil, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if res == nil {
+		t.Fatal("expected response to be != nil")
 	}
 
-	// Trace request and response details like this
-	//client.SetTracer(log.New(os.Stdout, "", 0))
-
-	// Ping the Elasticsearch server to get e.g. the version number
-	info, code, err := client.Ping("http://127.0.0.1:9200").Do()
-	if err != nil {
-		// Handle error
-		panic(err)
+	ret := new(elastic.PingResult)
+	if err := json.Unmarshal(res.Body, ret); err != nil {
+		t.Fatalf("expected no error on decode; got: %v", err)
 	}
-	fmt.Printf("Elasticsearch returned with code %d and version %s", code, info.Version.Number)
-
+	log.Println(ret)
+	if ret.Status != 200 {
+		t.Errorf("expected HTTP status 200; got: %d", ret.Status)
+	}
 }

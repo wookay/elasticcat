@@ -5,7 +5,15 @@ go:
 
 env:
   matrix:
-    - ES_VERSION=2.0.0
+    - ES_VERSION=1.7.3
+
+before_script:
+  - mkdir ${HOME}/elasticsearch
+  - wget http://download.elasticsearch.org/elasticsearch/elasticsearch/elasticsearch-${ES_VERSION}.tar.gz
+  - tar -xzf elasticsearch-${ES_VERSION}.tar.gz -C ${HOME}/elasticsearch
+  - ${HOME}/elasticsearch/elasticsearch-${ES_VERSION}/bin/elasticsearch >& /dev/null &
+  - sleep 15
+  - curl -XGET http://localhost:9200/
 
 sudo: false
 
@@ -16,22 +24,11 @@ script:
   - go get github.com/axw/gocov/gocov
   - go get github.com/mattn/goveralls
   - go get github.com/stretchr/testify/assert
-  - go get gopkg.in/olivere/elastic.v3
+  - go get gopkg.in/olivere/elastic.v2
   - go test -v -covermode=count -coverprofile=coverage.out github.com/wookay/elasticcat
 
 after_success:
   - goveralls -coverprofile=coverage.out -service=travis-ci -repotoken 7cRm8ihT7GFiA5sxKaTGi2tJ0drtnpMT9
-
-before_script:
-  - mkdir ${HOME}/elasticsearch
-  - wget http://download.elasticsearch.org/elasticsearch/release/org/elasticsearch/distribution/tar/elasticsearch/${ES_VERSION}/elasticsearch-${ES_VERSION}.tar.gz
-  - tar -xzvf elasticsearch-${ES_VERSION}.tar.gz -C ${HOME}/elasticsearch
-  - ls -alFR ${HOME}/elasticsearch
-  - cp config/elasticsearch.yml ${HOME}/elasticsearch/elasticsearch-${ES_VERSION}/config/
-  - cat ${HOME}/elasticsearch/elasticsearch-${ES_VERSION}/config/elasticsearch.yml
-  - ${HOME}/elasticsearch/elasticsearch-${ES_VERSION}/bin/elasticsearch >& /dev/null &
-  - sleep 15
-  - curl -XGET http://localhost:9200/
 
 notifications:
   email: false
