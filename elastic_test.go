@@ -1,8 +1,8 @@
 package elasticcat
 
 import (
-	"elastic"
 	"fmt"
+	"gopkg.in/olivere/elastic.v3"
 	"log"
 	"testing"
 )
